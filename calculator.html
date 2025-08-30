@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>計算機</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .calculator {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            width: 320px;
+        }
+
+        .display {
+            background-color: #000;
+            color: white;
+            font-size: 2.5em;
+            text-align: right;
+            padding: 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            height: 70px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .number {
+            background-color: #666;
+            color: white;
+        }
+
+        .number:hover {
+            background-color: #777;
+        }
+
+        .operator {
+            background-color: #ff9500;
+            color: white;
+        }
+
+        .operator:hover {
+            background-color: #ffb143;
+        }
+
+        .function {
+            background-color: #a6a6a6;
+            color: black;
+        }
+
+        .function:hover {
+            background-color: #b8b8b8;
+        }
+
+        .equals {
+            background-color: #ff9500;
+            color: white;
+        }
+
+        .equals:hover {
+            background-color: #ffb143;
+        }
+
+        .zero {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="function" onclick="clearAll()">AC</button>
+            <button class="function" onclick="toggleSign()">+/-</button>
+            <button class="function" onclick="percentage()">%</button>
+            <button class="operator" onclick="setOperator('/')">÷</button>
+            
+            <button class="number" onclick="inputNumber('7')">7</button>
+            <button class="number" onclick="inputNumber('8')">8</button>
+            <button class="number" onclick="inputNumber('9')">9</button>
+            <button class="operator" onclick="setOperator('*')">×</button>
+            
+            <button class="number" onclick="inputNumber('4')">4</button>
+            <button class="number" onclick="inputNumber('5')">5</button>
+            <button class="number" onclick="inputNumber('6')">6</button>
+            <button class="operator" onclick="setOperator('-')">-</button>
+            
+            <button class="number" onclick="inputNumber('1')">1</button>
+            <button class="number" onclick="inputNumber('2')">2</button>
+            <button class="number" onclick="inputNumber('3')">3</button>
+            <button class="operator" onclick="setOperator('+')">+</button>
+            
+            <button class="number zero" onclick="inputNumber('0')">0</button>
+            <button class="number" onclick="inputDecimal()">.</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentInput = '0';
+        let previousInput = null;
+        let operator = null;
+        let waitingForNewInput = false;
+
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        function inputNumber(num) {
+            if (waitingForNewInput) {
+                currentInput = num;
+                waitingForNewInput = false;
+            } else {
+                currentInput = currentInput === '0' ? num : currentInput + num;
+            }
+            updateDisplay();
+        }
+
+        function inputDecimal() {
+            if (waitingForNewInput) {
+                currentInput = '0.';
+                waitingForNewInput = false;
+            } else if (currentInput.indexOf('.') === -1) {
+                currentInput += '.';
+            }
+            updateDisplay();
+        }
+
+        function setOperator(op) {
+            if (previousInput !== null && operator !== null && !waitingForNewInput) {
+                calculate();
+            }
+            
+            previousInput = currentInput;
+            operator = op;
+            waitingForNewInput = true;
+        }
+
+        function calculate() {
+            if (previousInput === null || operator === null) return;
+            
+            let prev = parseFloat(previousInput);
+            let current = parseFloat(currentInput);
+            let result;
+            
+            switch (operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    if (current === 0) {
+                        alert('無法除以零');
+                        return;
+                    }
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            
+            currentInput = result.toString();
+            previousInput = null;
+            operator = null;
+            waitingForNewInput = true;
+            updateDisplay();
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            previousInput = null;
+            operator = null;
+            waitingForNewInput = false;
+            updateDisplay();
+        }
+
+        function toggleSign() {
+            if (currentInput !== '0') {
+                currentInput = currentInput.startsWith('-') 
+                    ? currentInput.slice(1) 
+                    : '-' + currentInput;
+                updateDisplay();
+            }
+        }
+
+        function percentage() {
+            currentInput = (parseFloat(currentInput) / 100).toString();
+            updateDisplay();
+        }
+
+        // 鍵盤輸入支援
+        document.addEventListener('keydown', function(event) {
+            if (event.key >= '0' && event.key <= '9') {
+                inputNumber(event.key);
+            } else if (event.key === '.') {
+                inputDecimal();
+            } else if (event.key === '+') {
+                setOperator('+');
+            } else if (event.key === '-') {
+                setOperator('-');
+            } else if (event.key === '*') {
+                setOperator('*');
+            } else if (event.key === '/') {
+                event.preventDefault();
+                setOperator('/');
+            } else if (event.key === 'Enter' || event.key === '=') {
+                event.preventDefault();
+                calculate();
+            } else if (event.key === 'Escape') {
+                clearAll();
+            } else if (event.key === '%') {
+                percentage();
+            }
+        });
+    </script>
+</body>
+</html>
